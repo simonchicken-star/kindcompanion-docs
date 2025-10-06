@@ -1,0 +1,15 @@
+﻿# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Builds / env
+node_modules/
+dist/
+build/
+.env
+.env.*
+__pycache__/
+*.pyc
+*.zip
