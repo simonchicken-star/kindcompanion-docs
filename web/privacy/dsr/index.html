@@ -42,8 +42,6 @@
     I confirm this request concerns my personal data and I consent to processing this request for identity verification and fulfilment.
   </label></p>
 
-  <p><small>By submitting, you agree to our <a href="/privacy">Privacy Policy</a>. We’ll verify identity by email and complete within 30 days (usually sooner).</small></p>
-
   <div class="hidden-hp" aria-hidden="true">
     <label for="company">Company (leave blank)</label>
     <input id="company" name="company" tabindex="-1" autocomplete="organization">
@@ -57,9 +55,8 @@
 
   <button id="submitBtn" type="submit">Submit DSR</button>
   <p id="status" role="status" aria-live="polite"><small></small></p>
-  <noscript><p><small>JavaScript is off. Submission will still work, but no instant confirmation.</small></p></noscript>
+  <noscript><p><small>JS off: submission still works, but no instant confirmation.</small></p></noscript>
 </form>
-
 <script>
   document.getElementById('ua').value = navigator.userAgent||'';
   document.getElementById('referrer').value = document.referrer||'';
