@@ -1,0 +1,34 @@
+                +-----------------------+
+                |   kindcompanion.chat  |
+                |   (Netlify Hosting)   |
+                +-----------+-----------+
+                            |
+                            v
++--------------------+    +--------------------+
+|  WhatsApp Cloud API|    |   Stripe Payments  |
+|  (Meta)            |    | (Â£1 / Â£4 tiers)    |
++---------+----------+    +----------+---------+
+          |                          |
+          v                          v
+       +------------------------------------+
+       |           Make.com (Automation)    |
+       |  Flows: WAâ†”Stripeâ†”GCPâ†”Zohoâ†”Monitor |
+       +------------------+-----------------+
+                          |
+                          v
+                +----------------------+
+                |  GCP (kindcompanion) |
+                |  Secret Mgr â€¢ WIF    |
+                +----------+-----------+
+                           |
+                           v
+                   +---------------+
+                   | OpenAI GPT-5  |
+                   | Voice & Core  |
+                   +---------------+
+
+Aux:
+- GitHub (Source / CI)
+- UptimeRobot (Ping)
+- Zoho Mail (Support)
+- HP OmniBook (Local Ops)

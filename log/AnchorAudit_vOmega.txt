@@ -1,0 +1,20 @@
+ANCHOR AUDIT â€” VERSION Î©
+
+BASELINE LOCK: 2025-10-06 13:00 BST
+
+PURGED:
+- Legacy â€œAmicaâ€ naming where superseded.
+- Test infra duplicates (e.g., Vercel experiments).
+- Unrelated ventures and threads (energy brokerage, car sourcing, personal affordability planning).
+- Redundant or conflicting prompts superseded by vÎ©.
+
+RETAINED:
+- All Chair-approved directives and compliance IDs.
+- Infra specs (Netlify, GCP, Make, Stripe, Zoho, GitHub, UptimeRobot, WhatsApp Cloud API).
+- Monetisation data (Â£1/Â£4), WhatsApp CTA, privacy ethos.
+- Global multilingual + Voice ON decisions.
+
+INTEGRITY:
+- Consistency: 99%
+- Compliance Coverage: 100%
+- Notes: DSR portal and DPIA PDF placeholder to be created in repo.
