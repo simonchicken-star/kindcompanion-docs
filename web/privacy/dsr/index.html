@@ -1,11 +1,22 @@
-﻿<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>KindCompanion • DSR</title></head><body>
+﻿<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KindCompanion • DSR</title>
+<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:40px;max-width:720px}</style>
+</head><body>
 <h1>Data Subject Request (DSR)</h1>
+<p>Use this form to request access/erasure/export/rectification/restriction/object.</p>
 <form method="post" action="https://hook.integromat.com/REPLACE_WITH_YOUR_WEBHOOK">
-<input name="name" placeholder="Full name" required>
-<input name="email" type="email" placeholder="Email" required>
-<input name="whatsapp" placeholder="+44..." />
-<select name="type" required><option value="">Select</option><option>access</option><option>erase</option><option>export</option><option>rectify</option><option>restrict</option><option>object</option></select>
-<textarea name="details" rows="4" placeholder="Details (optional)"></textarea>
-<button type="submit">Submit DSR</button>
+  <p><input name="name" placeholder="Full name" required style="width:100%;padding:10px"></p>
+  <p><input name="email" type="email" placeholder="Email" required style="width:100%;padding:10px"></p>
+  <p><input name="whatsapp" placeholder="+44..." style="width:100%;padding:10px"></p>
+  <p>
+    <select name="type" required style="width:100%;padding:10px">
+      <option value="">Select request type</option>
+      <option>access</option><option>erase</option><option>export</option>
+      <option>rectify</option><option>restrict</option><option>object</option>
+    </select>
+  </p>
+  <p><textarea name="details" rows="4" placeholder="Details (optional)" style="width:100%;padding:10px"></textarea></p>
+  <p><button type="submit" style="padding:10px 16px">Submit DSR</button></p>
 </form>
+<p><small>We’ll verify identity by email and complete within 30 days (usually sooner).</small></p>
 </body></html>
