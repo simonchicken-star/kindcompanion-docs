@@ -1,8 +1,0 @@
-﻿[build]
-  publish = "web"
-  command = ""
-
-[[redirects]]
-  from = "/privacy/dsr"
-  to = "/privacy/dsr/"
-  status = 301
