@@ -1,117 +1,74 @@
 ﻿<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>KindCompanion • Data Subject Request (DSR)</title>
-  <style>
-    :root { --fg:#111; --bg:#fff; --muted:#666; --accent:#0a7; }
-    body { font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--fg); background:var(--bg); margin:40px; max-width:720px }
-    label { display:block; margin:12px 0 6px; font-weight:600 }
-    input, select, textarea { width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font:inherit }
-    small { color:var(--muted) }
-    button { padding:10px 16px; border-radius:8px; border:0; background:var(--accent); color:#fff; font-weight:700; cursor:pointer }
-    .row { display:flex; gap:12px; }
-    .row > div { flex:1 }
-    .hidden-hp { position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden }
-    .note { margin-top:8px }
-  </style>
-</head>
-<body>
-  <h1>Data Subject Request (DSR)</h1>
-  <p>Use this form to request access, erasure, export, rectification, restriction, or objection under GDPR.</p>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KindCompanion • DSR</title>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:40px;max-width:720px}
+  label{display:block;margin:12px 0 6px;font-weight:600}
+  input,select,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font:inherit}
+  button{padding:10px 16px;border-radius:8px;border:0;background:#0a7;color:#fff;font-weight:700;cursor:pointer}
+  .row{display:flex;gap:12px}.row>div{flex:1}.hidden-hp{position:absolute;left:-9999px}
+  small{color:#666}
+</style>
+</head><body>
+<h1>Data Subject Request (DSR)</h1>
+<p>Use this form to request access, erasure, export, rectification, restriction, or objection under GDPR.</p>
+<form id="dsr" method="post" action="https://hook.eu2.make.com/fkgiq5jz86npl4eonfe4f2g84pivhgym" novalidate>
+  <label for="name">Full name</label>
+  <input id="name" name="name" autocomplete="name" required>
 
-  <form id="dsr" method="post" action="" novalidate>
-    <!-- required fields -->
-    <label for="name">Full name</label>
-    <input id="name" name="name" autocomplete="name" required>
-
-    <div class="row">
-      <div>
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" autocomplete="email" required>
-      </div>
-      <div>
-        <label for="whatsapp">WhatsApp (optional)</label>
-        <input id="whatsapp" name="whatsapp" placeholder="+44..." inputmode="tel" autocomplete="tel">
-      </div>
+  <div class="row">
+    <div>
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" required>
     </div>
-
-    <label for="type">Request type</label>
-    <select id="type" name="type" required>
-      <option value="">Select request type</option>
-      <option>access</option>
-      <option>erase</option>
-      <option>export</option>
-      <option>rectify</option>
-      <option>restrict</option>
-      <option>object</option>
-    </select>
-
-    <label for="details">Details (optional)</label>
-    <textarea id="details" name="details" rows="4" placeholder="Add any details that help us locate your data (e.g., date ranges)."></textarea>
-
-    <!-- consent (explicit) -->
-    <p class="note">
-      <label><input type="checkbox" name="consent_ack" required>
-        I confirm this request concerns my personal data and I consent to processing this request for identity verification and fulfilment.
-      </label>
-    </p>
-
-    <!-- privacy links -->
-    <p class="note">
-      <small>By submitting, you agree to our <a href="/privacy">Privacy Policy</a>. We’ll verify identity by email and complete within 30 days (usually sooner).</small>
-    </p>
-
-    <!-- honeypot (bots only) -->
-    <div class="hidden-hp" aria-hidden="true">
-      <label for="company">Company (leave blank)</label>
-      <input id="company" name="company" tabindex="-1" autocomplete="organization">
+    <div>
+      <label for="whatsapp">WhatsApp (optional)</label>
+      <input id="whatsapp" name="whatsapp" placeholder="+44..." inputmode="tel" autocomplete="tel">
     </div>
+  </div>
 
-    <!-- metadata for Make -->
-    <input type="hidden" name="ua" id="ua">
-    <input type="hidden" name="referrer" id="referrer">
-    <input type="hidden" name="tz" id="tz">
-    <input type="hidden" name="ts_iso" id="ts_iso">
-    <input type="hidden" name="site_version" value="vOmega">
+  <label for="type">Request type</label>
+  <select id="type" name="type" required>
+    <option value="">Select request type</option>
+    <option>access</option><option>erase</option><option>export</option>
+    <option>rectify</option><option>restrict</option><option>object</option>
+  </select>
 
-    <button id="submitBtn" type="submit">Submit DSR</button>
-    <p id="status" class="note" role="status" aria-live="polite"></p>
-    <noscript><p class="note"><small>JavaScript is off. Submission will still work, but no instant confirmation.</small></p></noscript>
-  </form>
+  <label for="details">Details (optional)</label>
+  <textarea id="details" name="details" rows="4" placeholder="Add any details that help us locate your data."></textarea>
 
-  <script>
-    // Fill metadata
-    document.getElementById('ua').value = navigator.userAgent || '';
-    document.getElementById('referrer').value = document.referrer || '';
-    document.getElementById('tz').value = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-    document.getElementById('ts_iso').value = new Date().toISOString();
+  <p><label><input type="checkbox" name="consent_ack" required>
+    I confirm this request concerns my personal data and I consent to processing this request for identity verification and fulfilment.
+  </label></p>
 
-    // Client-side niceties
-    const form = document.getElementById('dsr');
-    const status = document.getElementById('status');
-    const btn = document.getElementById('submitBtn');
+  <p><small>By submitting, you agree to our <a href="/privacy">Privacy Policy</a>. We’ll verify identity by email and complete within 30 days (usually sooner).</small></p>
 
-    form.addEventListener('submit', function (e) {
-      // basic anti-spam: honeypot must be empty
-      if (form.company && form.company.value.trim() !== '') {
-        e.preventDefault();
-        status.textContent = 'Submission blocked (bot detected).';
-        return false;
-      }
-      // prevent double submit
-      btn.disabled = true;
-      btn.textContent = 'Submitting…';
-      status.textContent = 'Sending securely…';
-    }, { passive: false });
-  </script>
-</body>
-</html>
+  <div class="hidden-hp" aria-hidden="true">
+    <label for="company">Company (leave blank)</label>
+    <input id="company" name="company" tabindex="-1" autocomplete="organization">
+  </div>
 
+  <input type="hidden" name="ua" id="ua">
+  <input type="hidden" name="referrer" id="referrer">
+  <input type="hidden" name="tz" id="tz">
+  <input type="hidden" name="ts_iso" id="ts_iso">
+  <input type="hidden" name="site_version" value="vOmega">
 
+  <button id="submitBtn" type="submit">Submit DSR</button>
+  <p id="status" role="status" aria-live="polite"><small></small></p>
+  <noscript><p><small>JavaScript is off. Submission will still work, but no instant confirmation.</small></p></noscript>
+</form>
 
-
-
-
-
+<script>
+  document.getElementById('ua').value = navigator.userAgent||'';
+  document.getElementById('referrer').value = document.referrer||'';
+  document.getElementById('tz').value = Intl.DateTimeFormat().resolvedOptions().timeZone||'';
+  document.getElementById('ts_iso').value = new Date().toISOString();
+  const f=document.getElementById('dsr'), s=document.getElementById('status'), b=document.getElementById('submitBtn');
+  f.addEventListener('submit', e => {
+    if (f.company && f.company.value.trim()!==''){ e.preventDefault(); s.textContent='Submission blocked (bot detected).'; return }
+    b.disabled = true; b.textContent='Submitting…'; s.textContent='Sending securely…';
+  }, { passive:false });
+</script>
+</body></html>

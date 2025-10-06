@@ -1,0 +1,200 @@
+﻿{
+  "name": "KC_DSR_Intake_vOmega_v3",
+  "version": 2,
+  "metadata": {
+    "notes": "KindCompanion GDPR DSR vΩ v3: Webhook -> Honeypot + email check -> GitHub dedupe check -> Create Issue -> (optional) Slack notify -> Resend ACK -> 302 redirect."
+  },
+  "variables": [
+    { "name": "GITHUB_REPO",        "value": "simonchicken-star/kindcompanion-docs" },
+    { "name": "GITHUB_TOKEN",       "value": "PASTE_GITHUB_PAT_HERE" },
+    { "name": "THANK_YOU_URL",      "value": "https://kindcompanionchat.netlify.app/privacy/dsr/thank-you.html" },
+    { "name": "RESEND_API_KEY",     "value": "re_xxx_paste_here" },
+    { "name": "RESEND_FROM",        "value": "KindCompanion <support@your-verified-domain.com>" },
+    { "name": "ACK_SUBJECT",        "value": "We received your DSR request" },
+    { "name": "SLACK_WEBHOOK_URL",  "value": "" },
+    { "name": "DEDUPE_WINDOW_DAYS", "value": "7" }
+  ],
+  "flow": {
+    "rootModuleId": "mod_webhook",
+    "modules": [
+      {
+        "id": "mod_webhook",
+        "name": "Custom webhook: KC_DSR_vOmega_v3",
+        "type": "hook.customWebhook",
+        "parameters": {
+          "hookName": "KC_DSR_vOmega_v3",
+          "payloadType": "form",
+          "respondImmediately": false
+        },
+        "success": "flt_honeypot"
+      },
+      {
+        "id": "flt_honeypot",
+        "name": "Filter: Honeypot empty",
+        "type": "flow.filter",
+        "parameters": {
+          "conditions": [
+            { "operand1": "{{mod_webhook.output.body.company}}", "operator": "isEmpty", "operand2": "" }
+          ]
+        },
+        "true": "flt_email",
+        "false": "mod_block"
+      },
+      {
+        "id": "flt_email",
+        "name": "Filter: Email contains @",
+        "type": "flow.filter",
+        "parameters": {
+          "conditions": [
+            { "operand1": "{{mod_webhook.output.body.email}}", "operator": "contains", "operand2": "@" }
+          ]
+        },
+        "true": "mod_search",
+        "false": "mod_bademail"
+      },
+      {
+        "id": "mod_bademail",
+        "name": "Webhook response (bad email)",
+        "type": "hook.respond",
+        "parameters": {
+          "statusCode": 400,
+          "headers": [ { "name": "Content-Type", "value": "application/json" } ],
+          "body": "{\"status\":\"error\",\"reason\":\"invalid_email\"}"
+        }
+      },
+      {
+        "id": "mod_block",
+        "name": "Webhook response (bot blocked)",
+        "type": "hook.respond",
+        "parameters": {
+          "statusCode": 400,
+          "headers": [ { "name": "Content-Type", "value": "application/json" } ],
+          "body": "{\"status\":\"blocked\",\"reason\":\"honeypot\"}"
+        }
+      },
+
+      /* ---------- DEDUPE / SOFT RATE LIMIT VIA GITHUB SEARCH ---------- */
+      {
+        "id": "mod_search",
+        "name": "HTTP: GitHub search issues (dedupe)",
+        "type": "http.makeRequest",
+        "parameters": {
+          "url": "https://api.github.com/search/issues?q=repo%3A{{GITHUB_REPO}}+in%3Atitle+\"{{mod_webhook.output.body.email}}\"+label%3Adsr+state%3Aopen",
+          "method": "GET",
+          "headers": [
+            { "name": "Authorization", "value": "Bearer {{GITHUB_TOKEN}}" },
+            { "name": "Accept",        "value": "application/vnd.github+json" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ],
+          "followRedirect": true,
+          "timeout": 300
+        },
+        "success": "flt_duplicate"
+      },
+      {
+        "id": "flt_duplicate",
+        "name": "Filter: total_count == 0 (no open ticket for this email)",
+        "type": "flow.filter",
+        "parameters": {
+          "conditions": [
+            { "operand1": "{{mod_search.output.body}}", "operator": "contains", "operand2": "\"total_count\": 0" }
+          ]
+        },
+        "true": "mod_issue",
+        "false": "mod_duplicateResponse"
+      },
+      {
+        "id": "mod_duplicateResponse",
+        "name": "Webhook response (duplicate)",
+        "type": "hook.respond",
+        "parameters": {
+          "statusCode": 200,
+          "headers": [ { "name": "Content-Type", "value": "application/json" } ],
+          "body": "{\"status\":\"ok\",\"note\":\"duplicate_open_ticket\"}"
+        }
+      },
+
+      /* ---------- CREATE ISSUE ---------- */
+      {
+        "id": "mod_issue",
+        "name": "HTTP: Create GitHub Issue",
+        "type": "http.makeRequest",
+        "parameters": {
+          "url": "https://api.github.com/repos/{{GITHUB_REPO}}/issues",
+          "method": "POST",
+          "headers": [
+            { "name": "Authorization", "value": "Bearer {{GITHUB_TOKEN}}" },
+            { "name": "Accept",        "value": "application/vnd.github+json" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ],
+          "body": "{\n  \"title\": \"DSR: {{mod_webhook.output.body.email}} — {{mod_webhook.output.body.type}}\",\n  \"body\": \"**KindCompanion DSR vΩ**\\n\\n**Name:** {{mod_webhook.output.body.name}}\\n**Email:** {{mod_webhook.output.body.email}}\\n**WhatsApp:** {{mod_webhook.output.body.whatsapp}}\\n**Type:** {{mod_webhook.output.body.type}}\\n**Details:** {{mod_webhook.output.body.details}}\\n\\n**Metadata**\\n- tz: {{mod_webhook.output.body.tz}}\\n- ts_iso: {{mod_webhook.output.body.ts_iso}}\\n- referrer: {{mod_webhook.output.body.referrer}}\\n- ua: {{mod_webhook.output.body.ua}}\\n\\n**Compliance**\\n- consent_ack: {{mod_webhook.output.body.consent_ack}}\\n- ICO: ZB992047\\n- Version: vOmega\\n\",\n  \"labels\": [\"dsr\",\"privacy\",\"vOmega\"]\n}",
+          "followRedirect": true,
+          "timeout": 300
+        },
+        "success": "flt_slack"
+      },
+
+      /* ---------- OPTIONAL SLACK NOTIFY ---------- */
+      {
+        "id": "flt_slack",
+        "name": "Filter: Slack webhook present",
+        "type": "flow.filter",
+        "parameters": {
+          "conditions": [
+            { "operand1": "{{SLACK_WEBHOOK_URL}}", "operator": "notEmpty", "operand2": "" }
+          ]
+        },
+        "true": "mod_slack",
+        "false": "mod_ack"
+      },
+      {
+        "id": "mod_slack",
+        "name": "HTTP: Slack incoming webhook",
+        "type": "http.makeRequest",
+        "parameters": {
+          "url": "{{SLACK_WEBHOOK_URL}}",
+          "method": "POST",
+          "headers": [
+            { "name": "Content-Type", "value": "application/json" }
+          ],
+          "body": "{\n  \"text\": \"*New DSR* (vΩ)\\n• *Type:* {{mod_webhook.output.body.type}}\\n• *Email:* {{mod_webhook.output.body.email}}\\n• *Name:* {{mod_webhook.output.body.name}}\\n• *When:* {{mod_webhook.output.body.ts_iso}} ({{mod_webhook.output.body.tz}})\\n• *Consent:* {{mod_webhook.output.body.consent_ack}}\"\n}",
+          "followRedirect": true,
+          "timeout": 120
+        },
+        "success": "mod_ack"
+      },
+
+      /* ---------- EMAIL ACK + REDIRECT ---------- */
+      {
+        "id": "mod_ack",
+        "name": "HTTP: Resend email ACK",
+        "type": "http.makeRequest",
+        "parameters": {
+          "url": "https://api.resend.com/emails",
+          "method": "POST",
+          "headers": [
+            { "name": "Authorization", "value": "Bearer {{RESEND_API_KEY}}" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ],
+          "body": "{\n  \"from\": \"{{RESEND_FROM}}\",\n  \"to\": \"{{mod_webhook.output.body.email}}\",\n  \"subject\": \"{{ACK_SUBJECT}}\",\n  \"text\": \"Hi {{mod_webhook.output.body.name}},\\n\\nWe’ve received your {{mod_webhook.output.body.type}} request. We’ll verify identity by email and complete within 30 days (usually sooner).\\n\\nTicket email: {{mod_webhook.output.body.email}}\\nWhen: {{mod_webhook.output.body.ts_iso}} ({{mod_webhook.output.body.tz}})\\n\\nIf you didn’t make this request, reply to this email.\\n\\n— KindCompanion Privacy Team\",\n  \"headers\": { \"X-KC-DSR\": \"vOmega\" }\n}",
+          "followRedirect": true,
+          "timeout": 300
+        },
+        "success": "mod_respond"
+      },
+      {
+        "id": "mod_respond",
+        "name": "Webhook response 302 -> thank-you",
+        "type": "hook.respond",
+        "parameters": {
+          "statusCode": 302,
+          "headers": [
+            { "name": "Location", "value": "{{THANK_YOU_URL}}" },
+            { "name": "Cache-Control", "value": "no-store" }
+          ],
+          "body": ""
+        }
+      }
+    ]
+  }
+}

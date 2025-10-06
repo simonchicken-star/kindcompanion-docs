@@ -1,0 +1,87 @@
+﻿{
+  "name": "KC_DSR_Intake_vOmega",
+  "version": 2,
+  "metadata": {
+    "notes": "KindCompanion GDPR DSR intake vΩ. Webhook -> filter honeypot -> HTTP create GitHub issue -> 302 redirect to thank-you."
+  },
+  "variables": [
+    { "name": "GITHUB_REPO", "value": "simonchicken-star/kindcompanion-docs" },
+    { "name": "GITHUB_TOKEN", "value": "PASTE_GITHUB_PAT_HERE" },
+    { "name": "THANK_YOU_URL", "value": "https://kindcompanionchat.netlify.app/privacy/dsr/thank-you.html" }
+  ],
+  "flow": {
+    "rootModuleId": "mod_webhook",
+    "modules": [
+      {
+        "id": "mod_webhook",
+        "name": "Custom webhook: KC_DSR_vOmega",
+        "type": "hook.customWebhook",
+        "parameters": {
+          "hookName": "KC_DSR_vOmega",
+          "payloadType": "form",
+          "respondImmediately": false
+        },
+        "success": "flt_honeypot"
+      },
+      {
+        "id": "flt_honeypot",
+        "name": "Filter: Honeypot is empty",
+        "type": "flow.filter",
+        "parameters": {
+          "conditions": [
+            {
+              "operand1": "{{mod_webhook.output.body.company}}",
+              "operator": "isEmpty",
+              "operand2": ""
+            }
+          ]
+        },
+        "true": "mod_issue",
+        "false": "mod_block"
+      },
+      {
+        "id": "mod_block",
+        "name": "Webhook response (bot blocked)",
+        "type": "hook.respond",
+        "parameters": {
+          "statusCode": 400,
+          "headers": [
+            { "name": "Content-Type", "value": "application/json" }
+          ],
+          "body": "{\"status\":\"blocked\",\"reason\":\"honeypot\"}"
+        }
+      },
+      {
+        "id": "mod_issue",
+        "name": "HTTP: Create GitHub Issue",
+        "type": "http.makeRequest",
+        "parameters": {
+          "url": "https://api.github.com/repos/{{GITHUB_REPO}}/issues",
+          "method": "POST",
+          "headers": [
+            { "name": "Authorization", "value": "Bearer {{GITHUB_TOKEN}}" },
+            { "name": "Accept", "value": "application/vnd.github+json" },
+            { "name": "Content-Type", "value": "application/json" }
+          ],
+          "body": "{\n  \"title\": \"DSR: {{mod_webhook.output.body.email}} — {{mod_webhook.output.body.type}}\",\n  \"body\": \"**KindCompanion DSR vΩ**\\n\\n**Name:** {{mod_webhook.output.body.name}}\\n**Email:** {{mod_webhook.output.body.email}}\\n**WhatsApp:** {{mod_webhook.output.body.whatsapp}}\\n**Type:** {{mod_webhook.output.body.type}}\\n**Details:** {{mod_webhook.output.body.details}}\\n\\n**Metadata**\\n- tz: {{mod_webhook.output.body.tz}}\\n- ts_iso: {{mod_webhook.output.body.ts_iso}}\\n- referrer: {{mod_webhook.output.body.referrer}}\\n- ua: {{mod_webhook.output.body.ua}}\\n\\n**Compliance**\\n- consent_ack: {{mod_webhook.output.body.consent_ack}}\\n- ICO: ZB992047\\n- Version: vOmega\\n\",\n  \"labels\": [\"dsr\",\"privacy\",\"vOmega\"]\n}",
+          "followRedirect": true,
+          "timeout": 300
+        },
+        "success": "mod_respond"
+      },
+      {
+        "id": "mod_respond",
+        "name": "Webhook response 302 -> thank-you",
+        "type": "hook.respond",
+        "parameters": {
+          "statusCode": 302,
+          "headers": [
+            { "name": "Location", "value": "{{THANK_YOU_URL}}" },
+            { "name": "Cache-Control", "value": "no-store" }
+          ],
+          "body": ""
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,56 @@
+﻿{
+  "name": "KC_DSR_AuditExport_vOmega_v3_1",
+  "version": 3,
+  "metadata": { "notes": "Nightly 02:00 Europe/London: fetch DSR issues updated in last 24h and email summary via Resend." },
+  "variables": [
+    { "name": "GITHUB_REPO",     "value": "simonchicken-star/kindcompanion-docs" },
+    { "name": "GITHUB_TOKEN",    "value": "PASTE_GITHUB_PAT_HERE" },
+    { "name": "RESEND_API_KEY",  "value": "re_xxx_paste_here" },
+    { "name": "RESEND_FROM",     "value": "KindCompanion <support@your-verified-domain.com>" },
+    { "name": "RESEND_TO",       "value": "simon@talktoamica.com" }
+  ],
+  "flow": {
+    "rootModuleId": "mod_sched",
+    "modules": [
+      {
+        "id": "mod_sched",
+        "name": "Scheduler: every day 02:00 Europe/London",
+        "type": "flow.scheduler",
+        "parameters": { "cron": "0 2 * * *", "timezone": "Europe/London" },
+        "success": "mod_list"
+      },
+      {
+        "id": "mod_list",
+        "name": "HTTP: GitHub issues updated last 24h (label: dsr)",
+        "type": "http.makeRequest",
+        "parameters": {
+          "url": "https://api.github.com/repos/{{GITHUB_REPO}}/issues?labels=dsr&state=all&since={{formatDate(addHours(now; -24); \"YYYY-MM-DD'T'HH:mm:ss'Z'\")}}&per_page=100",
+          "method": "GET",
+          "headers": [
+            { "name": "Authorization", "value": "Bearer {{GITHUB_TOKEN}}" },
+            { "name": "Accept",        "value": "application/vnd.github+json" }
+          ],
+          "followRedirect": true,
+          "timeout": 300
+        },
+        "success": "mod_email"
+      },
+      {
+        "id": "mod_email",
+        "name": "HTTP: Resend summary",
+        "type": "http.makeRequest",
+        "parameters": {
+          "url": "https://api.resend.com/emails",
+          "method": "POST",
+          "headers": [
+            { "name": "Authorization", "value": "Bearer {{RESEND_API_KEY}}" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ],
+          "body": "{\n  \"from\": \"{{RESEND_FROM}}\",\n  \"to\": \"{{RESEND_TO}}\",\n  \"subject\": \"KC • DSR audit (last 24h)\",\n  \"text\": \"Repo: {{GITHUB_REPO}}\\nWindow: last 24h from {{formatDate(addHours(now; -24); \"YYYY-MM-DD HH:mm\")}} to {{formatDate(now; \"YYYY-MM-DD HH:mm\")}}\\n\\nCount: {{length(mod_list.output.body)}}\\n\\nTip: Open filtered view:\\nhttps://github.com/{{GITHUB_REPO}}/issues?q=is%3Aissue+label%3Adsr+updated%3A%3E{{formatDate(addHours(now; -24); \"YYYY-MM-DD\")}}\\n\"\n}",
+          "followRedirect": true,
+          "timeout": 300
+        }
+      }
+    ]
+  }
+}
